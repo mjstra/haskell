@@ -1,5 +1,5 @@
 { mkDerivation, array, base, containers, HUnit, QuickCheck, stdenv
-, tasty, tasty-hunit, tasty-quickcheck, doctest
+, tasty, ghcid, tasty-hunit, tasty-quickcheck, doctest
 }:
 mkDerivation {
   pname = "course";
@@ -7,7 +7,7 @@ mkDerivation {
   src = ./.;
   libraryHaskellDepends = [ array base containers ];
   testHaskellDepends = [
-    base HUnit QuickCheck tasty tasty-hunit tasty-quickcheck doctest
+    ghcid base HUnit QuickCheck tasty tasty-hunit tasty-quickcheck doctest
   ];
   homepage = "https://github.com/data61/fp-course";
   description = "Source code for a functional programming course";

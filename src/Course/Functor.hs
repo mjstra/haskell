@@ -20,10 +20,7 @@ import qualified Prelude as P(fmap)
 --   `∀f g x.(f . g <$> x) ≅ (f <$> (g <$> x))`
 class Functor k where
   -- Pronounced, eff-map.
-  (<$>) ::
-    (a -> b)
-    -> k a
-    -> k b
+  (<$>) :: (a -> b) -> k a -> k b
 
 infixl 4 <$>
 
@@ -37,12 +34,9 @@ infixl 4 <$>
 -- >>> (+1) <$> ExactlyOne 2
 -- ExactlyOne 3
 instance Functor ExactlyOne where
-  (<$>) ::
-    (a -> b)
-    -> ExactlyOne a
-    -> ExactlyOne b
-  (<$>) =
-    error "todo: Course.Functor (<$>)#instance ExactlyOne"
+  (<$>) :: (a -> b) -> ExactlyOne a -> ExactlyOne b
+  (<$>) f (ExactlyOne a) = ExactlyOne(f a)
+    --error "todo: Course.Functor (<$>)#instance ExactlyOne"
 
 -- | Maps a function on the List functor.
 --
@@ -52,12 +46,9 @@ instance Functor ExactlyOne where
 -- >>> (+1) <$> (1 :. 2 :. 3 :. Nil)
 -- [2,3,4]
 instance Functor List where
-  (<$>) ::
-    (a -> b)
-    -> List a
-    -> List b
-  (<$>) =
-    error "todo: Course.Functor (<$>)#instance List"
+  (<$>) :: (a -> b) -> List a -> List b
+  (<$>) f = foldRight(\val acc -> f val :. acc) Nil 
+   -- error "todo: Course.Functor (<$>)#instance List"
 
 -- | Maps a function on the Optional functor.
 --
@@ -66,25 +57,36 @@ instance Functor List where
 --
 -- >>> (+1) <$> Full 2
 -- Full 3
+
+
+
 instance Functor Optional where
-  (<$>) ::
-    (a -> b)
-    -> Optional a
-    -> Optional b
-  (<$>) =
-    error "todo: Course.Functor (<$>)#instance Optional"
+  (<$>) ::  (a -> b) -> Optional a -> Optional b
+ -- (<$>) _ Empty = Empty 
+  (<$>) f = optional (Full . f) Empty
+
+-- >>> optional (+1) 0 Empty
+-- 0
+-- >>>           f   a Empty
+--optional :: (a -> b) -> b -> Optional a -> b
+--optional f _ (Full b) = f b
+--optional _ e Empty = e
+  -- error "todo: Course.Functor (<$>)#instance Optional"
 
 -- | Maps a function on the reader ((->) t) functor.
 --
 -- >>> ((+1) <$> (*2)) 8
 -- 17
+
+-- functions are functors!
+--(<$>) is fmap
 instance Functor ((->) t) where
-  (<$>) ::
-    (a -> b)
-    -> ((->) t a)
-    -> ((->) t b)
-  (<$>) =
-    error "todo: Course.Functor (<$>)#((->) t)"
+  (<$>) :: (a -> b) -> ((->) t a) -> ((->) t b)
+  (<$>) f g= (f . g) 
+  --  f <$> g = \x -> f (g x)
+-- f = optional (Full . f) Empty
+
+  --error "todo: Course.Functor (<$>)#((->) t)"
 
 -- | Anonymous map. Maps a constant value on a functor.
 --
@@ -94,13 +96,10 @@ instance Functor ((->) t) where
 -- prop> \x a b c -> x <$ (a :. b :. c :. Nil) == (x :. x :. x :. Nil)
 --
 -- prop> \x q -> x <$ Full q == Full x
-(<$) ::
-  Functor k =>
-  a
-  -> k b
-  -> k a
-(<$) =
-  error "todo: Course.Functor#(<$)"
+(<$) :: Functor k => a -> k b -> k a
+(<$) = (.) (<$>) const
+-- \f g x ->  f(g(x)) 
+  --error "todo: Course.Functor#(<$)"
 
 -- | Anonymous map producing unit value.
 --
@@ -115,12 +114,9 @@ instance Functor ((->) t) where
 --
 -- >>> void (+10) 5
 -- ()
-void ::
-  Functor k =>
-  k a
-  -> k ()
-void =
-  error "todo: Course.Functor#void"
+void :: Functor k => k a -> k ()
+void = (<$) ()
+--void k = (<$>) () k
 
 -----------------------
 -- SUPPORT LIBRARIES --
